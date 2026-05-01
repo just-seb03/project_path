@@ -1,0 +1,1 @@
+config/: Contiene los archivos de configuración del servidor y los scripts de conexión a las bases de datos.

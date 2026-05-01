@@ -1,0 +1,1 @@
+public/: Directorio de acceso público. Incluye el punto de entrada (`index`), pantallas de autenticación y recursos estáticos (imágenes, audios y documentos).

@@ -1,0 +1,1 @@
+src/: Contiene la lógica de negocio y el núcleo del backend del sistema.

@@ -1,0 +1,1 @@
+views/: Contiene las interfaces de usuario finales, organizadas modularmente para facilitar su navegación.
