@@ -20,3 +20,7 @@ El proyecto utiliza una **arquitectura por capas**. Este enfoque garantiza:
 * **`src/`**: Contiene la lógica de negocio y el núcleo del backend del sistema.
 * **`templates/`**: Almacena los layouts base para estandarizar el diseño y optimizar el tiempo de desarrollo de nuevas interfaces al estandarizar los diseños.
 * **`views/`**: Contiene las interfaces de usuario finales, organizadas modularmente para facilitar su navegación.
+
+## Diagrama de Entidad-Relacion
+
+![Diagrama](/docs/db_diagram.svg "Diagrama de Entidad-Relacion respecto a la base de datos.")
