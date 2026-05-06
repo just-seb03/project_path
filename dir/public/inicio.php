@@ -7,7 +7,7 @@
         
         <div class="hero-actions">
             <a href="login.php?mode=login" class="btn-main">Comenzar ahora</a>
-            <a href="#" class="btn-secondary">Saber más</a>
+            <a href="details.php" class="btn-secondary">Saber más</a>
         </div>
     </section>
 </div>

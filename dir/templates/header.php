@@ -24,9 +24,8 @@
                 <li class="dropdown">
                     <a href="#">Ayuda</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">¿Qué es PATH?</a></li>
-                        <li><a href="#">Qué ofrecemos</a></li>
-                        <li><a href="#">Notas de lanzamiento</a></li>
+                        <li><a href="details.php">¿Qué es PATH?</a></li>
+                        <li><a href="changelog.php">Historial de Cambios</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -39,7 +38,7 @@
                 <li class="dropdown">
                     <a href="#">Sobre el proyecto</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Integrantes</a></li>
+                        <li><a href="integrantes.php">Integrantes</a></li>
                         <li><a href="https://github.com/just-seb03/project_path" target="_blank">GitHub</a></li>
                     </ul>
                 </li>
