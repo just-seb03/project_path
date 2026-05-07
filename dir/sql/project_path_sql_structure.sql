@@ -18,8 +18,10 @@ CREATE TABLE Directores (
     id_director INT PRIMARY KEY AUTO_INCREMENT,
     apellidos VARCHAR(50) NOT NULL,
     nombres VARCHAR(50) NOT NULL,
-    correo VARCHAR(100),
-    telefono VARCHAR(20)
+    correo VARCHAR(100) UNIQUE,
+    telefono VARCHAR(20),
+    password VARCHAR(255) NOT NULL,
+    cod_invitacion VARCHAR(50) UNIQUE
 );
 
 CREATE TABLE Estados (
@@ -48,8 +50,9 @@ CREATE TABLE Tutores (
     apellidos VARCHAR(50) NOT NULL,
     nombres VARCHAR(50) NOT NULL,
     cargo VARCHAR(50),
-    correo VARCHAR(100),
+    correo VARCHAR(100) UNIQUE,
     telefono VARCHAR(20),
+    password VARCHAR(255) NOT NULL,
     CONSTRAINT fk_id_empresa FOREIGN KEY (id_empresa) 
         REFERENCES Empresa(id_empresa) ON DELETE SET NULL
 );
@@ -71,7 +74,8 @@ CREATE TABLE Estudiantes (
     apellidos VARCHAR(50) NOT NULL,
     nombres VARCHAR(50) NOT NULL,
     id_carrera INT,
-    correo VARCHAR(100),
+    correo VARCHAR(100) UNIQUE,
+    password VARCHAR(255) NOT NULL,
     CONSTRAINT fk_carreras FOREIGN KEY (id_carrera) 
         REFERENCES Carreras(id_carrera)
 );
@@ -81,8 +85,10 @@ CREATE TABLE Encargados (
     id_carrera INT,
     apellidos VARCHAR(50) NOT NULL,
     nombres VARCHAR(50) NOT NULL,
-    correo VARCHAR(100),
+    correo VARCHAR(100) UNIQUE,
     telefono VARCHAR(20),
+    password VARCHAR(255) NOT NULL,
+    cod_invitacion VARCHAR(50) UNIQUE,
     CONSTRAINT fk_id_carreras FOREIGN KEY (id_carrera) 
         REFERENCES Carreras(id_carrera)
 );
@@ -103,4 +109,11 @@ CREATE TABLE Practicas (
         REFERENCES Tutores(id_tutor),
     CONSTRAINT fk_id_estados FOREIGN KEY (id_Estado) 
         REFERENCES Estados(id_estado)
+);
+
+CREATE TABLE recuperacion_pass (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    correo VARCHAR(150) NOT NULL,
+    codigo VARCHAR(6) NOT NULL,
+    expiracion DATETIME NOT NULL
 );
