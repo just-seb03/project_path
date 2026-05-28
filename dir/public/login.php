@@ -10,11 +10,7 @@
             
             <div class="forms-container">
                 <div class="form-slider" id="formSlider">
-<<<<<<< HEAD
                     <form id="loginForm" action="../src/login.php" method="POST" class="form-pane active">
-=======
-                    <form id="loginForm" action="../backend/login.php" method="POST" class="form-pane active">
->>>>>>> 8ad76e6dd18c8e4dd3c3211bf167ba85d13b4e93
                         <input type="hidden" name="action" value="login">
                         <h2>¡Bienvenido!</h2>
                         <p class="subtitle">Ingresa tus datos para continuar</p>
@@ -27,20 +23,12 @@
                         </div>
                         <div class="options">
                             <label><input type="checkbox"> Recordarme</label>
-<<<<<<< HEAD
                             <a href="recuperacion.php">Olvide mi contraseña</a>
-=======
-                            <a href="#">Olvide mi contraseña</a>
->>>>>>> 8ad76e6dd18c8e4dd3c3211bf167ba85d13b4e93
                         </div>
                         <button type="submit" class="btn-primary">Entrar</button>
                     </form>
 
-<<<<<<< HEAD
                     <form id="registerForm" action="../src/login.php" method="POST" class="form-pane">
-=======
-                    <form id="registerForm" action="../backend/login.php" method="POST" class="form-pane">
->>>>>>> 8ad76e6dd18c8e4dd3c3211bf167ba85d13b4e93
                         <input type="hidden" name="action" value="register">
                         <h2>Crea tu cuenta</h2>
                         <p class="subtitle">Registrate a nombre de tu institucion</p>

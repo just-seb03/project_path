@@ -63,7 +63,7 @@
                     <h2>gvbr-iel</h2>
                     <span class="integrante-role">Programador</span>
                     <span class="integrante-uni">Estudiante de la Universidad Central de Chile</span>
-                    <p class="integrante-quote">"pendiente"</p>
+                    <p class="integrante-quote">lema? para que sería el lema"</p>
                 </div>
             </a>
         </div>

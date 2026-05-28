@@ -112,11 +112,7 @@ function initPage() {
             const originalText = btn.innerText;
             btn.innerText = loadingText;
             
-<<<<<<< HEAD
             fetch(this.getAttribute('action'), { method: 'POST', body: new FormData(this) })
-=======
-            fetch(this.action, { method: 'POST', body: new FormData(this) })
->>>>>>> 8ad76e6dd18c8e4dd3c3211bf167ba85d13b4e93
             .then(res => res.json())
             .then(res => {
                 if(res.status === 'success') {
