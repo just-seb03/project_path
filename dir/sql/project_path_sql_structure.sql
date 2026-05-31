@@ -1,13 +1,16 @@
+/* Código Maria-DB */
+
 DROP TABLE IF EXISTS Practicas;
 DROP TABLE IF EXISTS Encargados;
 DROP TABLE IF EXISTS Estudiantes;
 DROP TABLE IF EXISTS Tutores;
 DROP TABLE IF EXISTS Carreras;
 DROP TABLE IF EXISTS Sedes;
-DROP TABLE IF EXISTS Empresa;
+DROP TABLE IF EXISTS Empresas;
 DROP TABLE IF EXISTS Estados;
 DROP TABLE IF EXISTS Directores;
 DROP TABLE IF EXISTS Universidades;
+DROP TABLE IF EXISTS recuperacion_pass;
 
 CREATE TABLE Universidades (
     id_universidad INT PRIMARY KEY AUTO_INCREMENT,
@@ -29,7 +32,7 @@ CREATE TABLE Estados (
     nombre VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE Empresa (
+CREATE TABLE Empresas (
     id_empresa INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     ubicacion VARCHAR(100),
@@ -111,9 +114,3 @@ CREATE TABLE Practicas (
         REFERENCES Estados(id_estado)
 );
 
-CREATE TABLE recuperacion_pass (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    correo VARCHAR(150) NOT NULL,
-    codigo VARCHAR(6) NOT NULL,
-    expiracion DATETIME NOT NULL
-);
