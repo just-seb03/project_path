@@ -23,7 +23,7 @@ El proyecto utiliza una **arquitectura por capas**. Este enfoque garantiza:
 
 ## Diagrama de Entidad-Relacion
 
-![Diagrama](/docs/db_diagram.svg "Diagrama de Entidad-Relacion respecto a la base de datos.")
+![Diagrama](/docs/db_diagram.png "Diagrama de Entidad-Relacion respecto a la base de datos.")
 
 ## Digrama de Actividades
 
