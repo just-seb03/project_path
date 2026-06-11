@@ -29,6 +29,22 @@ El proyecto utiliza una **arquitectura por capas**. Este enfoque garantiza:
 
 ![Diagrama](/docs/activity_diagram_uml.svg "Diagrama de Actividades.")
 
+## Diagrama de Contexto
+
+![Diagrama](/docs/Contexto%20C4.png "Diagrama de Contexto.")
+
+## Diagrama de Componentes
+
+![Diagrama](/docs/Componentes.png "Diagrama de Componentes.")
+
+## Diagrama de Contenedores
+
+![Diagrama](/docs/Contenedores.png "Diagrama de Contenedores.")
+
+## Diagrama de Arquitectura 
+
+![Diagrama](/docs/Diagrama%20de%20arquitectura.png "Diagrama de Arquitectura.")
+
 ## Instrucciones de Montaje
 
 ### Ubuntu/Debian
