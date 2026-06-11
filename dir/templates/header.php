@@ -22,21 +22,21 @@
             <ul class="nav-links">
                 <li><a href="inicio.php">Inicio</a></li>
                 <li class="dropdown">
-                    <a href="#">Ayuda</a>
+                    <a href="details.php">Ayuda</a>
                     <ul class="dropdown-menu">
                         <li><a href="details.php">¿Qué es PATH?</a></li>
                         <li><a href="changelog.php">Historial de Cambios</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="#">Cuenta</a>
+                    <a href="login.php">Cuenta</a>
                     <ul class="dropdown-menu">
                         <li><a href="login.php?mode=login">Iniciar sesión</a></li>
                         <li><a href="login.php?mode=register">Registrarse</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="#">Sobre el proyecto</a>
+                    <a href="integrantes.php">Sobre el proyecto</a>
                     <ul class="dropdown-menu">
                         <li><a href="integrantes.php">Integrantes</a></li>
                         <li><a href="https://github.com/just-seb03/project_path" target="_blank">GitHub</a></li>
