@@ -45,6 +45,10 @@ El proyecto utiliza una **arquitectura por capas**. Este enfoque garantiza:
 
 ![Diagrama](/docs/Diagrama%20de%20arquitectura.png "Diagrama de Arquitectura.")
 
+## Vista Fisica
+
+![Diagrama](/docs/Vista%20Fisica.png "Vista Fisica.")
+
 ## Instrucciones de Montaje
 
 ### Ubuntu/Debian
