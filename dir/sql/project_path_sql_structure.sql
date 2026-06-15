@@ -57,7 +57,7 @@ CREATE TABLE Tutores (
     telefono VARCHAR(20),
     password VARCHAR(255) NOT NULL,
     CONSTRAINT fk_id_empresa FOREIGN KEY (id_empresa) 
-        REFERENCES Empresa(id_empresa) ON DELETE SET NULL
+        REFERENCES Empresas(id_empresa) ON DELETE SET NULL
 );
 
 CREATE TABLE Carreras (
