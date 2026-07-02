@@ -81,34 +81,6 @@ function initPage() {
     };
   });
 
-  const rolSelect = document.getElementById("rolSelect");
-  const dynamicFields = document.getElementById("dynamicFields");
-
-  if (rolSelect && dynamicFields) {
-    rolSelect.onchange = function () {
-      let html = "";
-      const rol = this.value;
-      if (rol === "director") {
-        html = `<div class="field dynamic-field" style="animation-delay: 0.1s;"><input type="text" name="universidad" placeholder="Nombre de la Universidad" required></div>
-                        <div class="field dynamic-field" style="animation-delay: 0.2s;"><input type="text" name="carrera" placeholder="Nombre de la Carrera" required></div>
-                        <div class="field dynamic-field" style="animation-delay: 0.3s;"><input type="text" name="telefono" placeholder="Teléfono de contacto"></div>`;
-      } else if (rol === "encargado") {
-        html = `<div class="field dynamic-field" style="animation-delay: 0.1s;"><input type="text" name="telefono" placeholder="Teléfono de contacto" required></div>
-                        <div class="field dynamic-field" style="animation-delay: 0.2s;"><input type="text" name="cod_invitacion" placeholder="Código de invitación del Director" required></div>`;
-      } else if (rol === "estudiante") {
-        html = `<div class="field dynamic-field" style="animation-delay: 0.1s;"><input type="number" name="rut" placeholder="RUT (Sin guion)" required></div>
-                        <div class="field dynamic-field" style="animation-delay: 0.2s;"><input type="text" name="cod_invitacion" placeholder="Código de invitación del Encargado" required></div>`;
-      } else if (rol === "tutor") {
-        html = `<div class="field dynamic-field" style="animation-delay: 0.1s;"><input type="text" name="empresa" placeholder="Empresa donde trabajas" required></div>
-                        <div class="field dynamic-field" style="animation-delay: 0.2s;"><input type="text" name="cargo" placeholder="Tu cargo"></div>
-                        <div class="field dynamic-field" style="animation-delay: 0.3s;"><input type="text" name="telefono" placeholder="Teléfono"></div>`;
-      }
-      dynamicFields.innerHTML = html;
-
-      setTimeout(updateScrollIndicator, 50);
-    };
-  }
-
   const handleFormSubmit = (formId, loadingText) => {
     const form = document.getElementById(formId);
     if (!form) return;
@@ -145,6 +117,7 @@ function initPage() {
         });
     };
   };
+
   handleFormSubmit("loginForm", "Cargando...");
   handleFormSubmit("registerForm", "Registrando...");
 
