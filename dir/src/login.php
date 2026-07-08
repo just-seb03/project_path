@@ -1,8 +1,16 @@
 <?php
 session_start();
-require_once "../config/db.php";
-
 header("Content-Type: application/json");
+
+try {
+    require_once __DIR__ . "/../config/db.php";
+} catch (Throwable $e) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "No se pudo conectar a la base de datos. Revisa la configuración local de MySQL.",
+    ]);
+    exit();
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action"])) {
     if ($_POST["action"] === "login") {
