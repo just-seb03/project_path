@@ -31,9 +31,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action"])) {
                 $usuario_encontrado = true;
                 $_SESSION["rol"] = $tabla;
                 $_SESSION["correo"] = $usuario["correo"];
+
+                $redirect = $tabla === "estudiantes"
+                    ? "../views/dashboard_estudiante.php"
+                    : "success.php";
+
                 echo json_encode([
                     "status" => "success",
                     "message" => "Login exitoso",
+                    "redirect" => $redirect,
                 ]);
                 exit();
             }

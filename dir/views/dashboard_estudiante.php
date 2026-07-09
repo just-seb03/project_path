@@ -1,6 +1,8 @@
 <?php
-session_start();
-require_once "../config/db.php";
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+require_once __DIR__ . "/../config/db.php";
 
 /**
  * login.php solo guarda $_SESSION['rol'] (nombre de la tabla, ej "estudiantes")
@@ -43,45 +45,64 @@ $estudiante = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
 $id_practica = $estudiante["id_practica"] ?? null;
 
-// Historial de informes (usa la tabla `documentos` extendida con
-// id_practica, ver extension_documentos_v2.sql)
+// Historial de informes: la tabla de la base actual puede tener
+// un esquema más simple, así que construimos la consulta de forma segura.
 $informes = [];
-if ($id_practica) {
-    $stmt = $pdo->prepare(
-        "SELECT id_documentos AS id_informe, tipo_informe, nombre_archivo, fecha_subida, estado, comentario_revisor
-         FROM documentos
-         WHERE id_practica = :id_practica
-         ORDER BY fecha_subida DESC",
-    );
+$columnStmt = $pdo->query("SHOW COLUMNS FROM documentos");
+$documentColumns = [];
+foreach ($columnStmt as $column) {
+    $documentColumns[$column["Field"]] = true;
+}
+
+if ($id_practica && isset($documentColumns["id_practica"])) {
+    $selectParts = ["id_documentos AS id_informe"];
+    $selectParts[] = isset($documentColumns["titulo"]) ? "titulo AS nombre_archivo" : "NULL AS nombre_archivo";
+    $selectParts[] = isset($documentColumns["tipo"]) ? "tipo AS tipo_informe" : "'avance' AS tipo_informe";
+    $selectParts[] = isset($documentColumns["fecha_subida"]) ? "fecha_subida" : "NULL AS fecha_subida";
+    $selectParts[] = isset($documentColumns["estado"]) ? "estado" : "'pendiente' AS estado";
+    $selectParts[] = isset($documentColumns["comentario_revisor"]) ? "comentario_revisor" : "NULL AS comentario_revisor";
+
+    $sqlInformes = "SELECT " . implode(", ", $selectParts) . "
+                    FROM documentos
+                    WHERE id_practica = :id_practica
+                    ORDER BY id_documentos DESC";
+
+    $stmt = $pdo->prepare($sqlInformes);
     $stmt->execute(["id_practica" => $id_practica]);
     $informes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Mensajes con tutor y con encargado (requiere la tabla `mensajes`)
+// Mensajes con tutor y con encargado. Si la tabla `mensajes` no existe,
+// dejamos las listas vacías para que la vista siga funcionando.
 $mensajes_tutor = [];
 $mensajes_encargado = [];
 if ($id_practica) {
-    $sql_msj = "SELECT emisor_rol, emisor_correo, contenido, fecha_envio
-                FROM mensajes
-                WHERE id_practica = :id_practica AND destinatario_rol = :rol
-                ORDER BY fecha_envio ASC";
+    try {
+        $sql_msj = "SELECT emisor_rol, emisor_correo, contenido, fecha_envio
+                    FROM mensajes
+                    WHERE id_practica = :id_practica AND destinatario_rol = :rol
+                    ORDER BY fecha_envio ASC";
 
-    $stmt = $pdo->prepare($sql_msj);
-    $stmt->execute(["id_practica" => $id_practica, "rol" => "tutor"]);
-    $mensajes_tutor = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $pdo->prepare($sql_msj);
+        $stmt->execute(["id_practica" => $id_practica, "rol" => "tutor"]);
+        $mensajes_tutor = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->prepare($sql_msj);
-    $stmt->execute(["id_practica" => $id_practica, "rol" => "encargado"]);
-    $mensajes_encargado = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $pdo->prepare($sql_msj);
+        $stmt->execute(["id_practica" => $id_practica, "rol" => "encargado"]);
+        $mensajes_encargado = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $mensajes_tutor = [];
+        $mensajes_encargado = [];
+    }
 }
 
 function iniciales($nombres, $apellidos) {
-    $n = mb_substr(trim((string)$nombres), 0, 1);
-    $a = mb_substr(trim((string)$apellidos), 0, 1);
-    return mb_strtoupper($n . $a);
+    $n = substr(trim((string) $nombres), 0, 1);
+    $a = substr(trim((string) $apellidos), 0, 1);
+    return strtoupper($n . $a);
 }
 
-include "../templates/header.php";
+include __DIR__ . "/../templates/header.php";
 ?>
 
 <style>
@@ -440,10 +461,10 @@ include "../templates/header.php";
                             <tbody>
                                 <?php foreach ($informes as $inf): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($inf["nombre_archivo"]) ?></td>
-                                        <td><?= htmlspecialchars(ucfirst($inf["tipo_informe"])) ?></td>
-                                        <td><?= htmlspecialchars(date("d-m-Y", strtotime($inf["fecha_subida"]))) ?></td>
-                                        <td><span class="sello <?= htmlspecialchars($inf["estado"]) ?>"><?= htmlspecialchars($inf["estado"]) ?></span></td>
+                                        <td><?= htmlspecialchars($inf["nombre_archivo"] ?? "Sin nombre") ?></td>
+                                        <td><?= htmlspecialchars(ucfirst((string) ($inf["tipo_informe"] ?? "avance"))) ?></td>
+                                        <td><?= !empty($inf["fecha_subida"]) ? htmlspecialchars(date("d-m-Y", strtotime($inf["fecha_subida"]))) : "Sin fecha" ?></td>
+                                        <td><span class="sello <?= htmlspecialchars((string) ($inf["estado"] ?? "pendiente")) ?>"><?= htmlspecialchars((string) ($inf["estado"] ?? "pendiente")) ?></span></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -585,4 +606,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<?php include "../templates/footer.php"; ?>
+<?php include __DIR__ . "/../templates/footer.php"; ?>

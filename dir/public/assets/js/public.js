@@ -104,7 +104,8 @@ function initPage() {
               );
               document.querySelector('[data-target="login"]').click();
             } else {
-              navigate("success.php");
+              const redirectUrl = res.redirect || "success.php";
+              window.location.href = redirectUrl;
             }
           } else {
             btn.style.background = "#e57373";
