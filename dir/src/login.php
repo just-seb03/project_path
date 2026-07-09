@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action"])) {
 
                 $redirect = $tabla === "estudiantes"
                     ? "../views/dashboard_estudiante.php"
-                    : "success.php";
+                    : ($tabla === "encargados" ? "../views/dashboard_encargado.php" : "success.php");
 
                 echo json_encode([
                     "status" => "success",

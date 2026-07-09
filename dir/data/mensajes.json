@@ -1,0 +1,26 @@
+[
+    {
+        "id_practica": 1,
+        "emisor_rol": "encargado",
+        "emisor_correo": "andres.herrera@u.cl",
+        "destinatario_rol": "encargado",
+        "contenido": "nigger",
+        "fecha_envio": "2026-07-09 02:48:26"
+    },
+    {
+        "id_practica": 1,
+        "emisor_rol": "estudiante",
+        "emisor_correo": "sebastian.gonzalez@correo.cl",
+        "destinatario_rol": "encargado",
+        "contenido": "el masi es trolo",
+        "fecha_envio": "2026-07-09 02:50:44"
+    },
+    {
+        "id_practica": 1,
+        "emisor_rol": "estudiante",
+        "emisor_correo": "sebastian.gonzalez@correo.cl",
+        "destinatario_rol": "encargado",
+        "contenido": "hola",
+        "fecha_envio": "2026-07-09 03:06:48"
+    }
+]

@@ -4,6 +4,14 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 require_once __DIR__ . "/../config/db.php";
 
+$flashMessage = null;
+$flashType = 'success';
+if (!empty($_SESSION['flash'])) {
+    $flashMessage = $_SESSION['flash']['message'] ?? null;
+    $flashType = $_SESSION['flash']['type'] ?? 'success';
+    unset($_SESSION['flash']);
+}
+
 /**
  * login.php solo guarda $_SESSION['rol'] (nombre de la tabla, ej "estudiantes")
  * y $_SESSION['correo']. No hay id_usuario en sesión, así que buscamos
@@ -380,6 +388,10 @@ include __DIR__ . "/../templates/header.php";
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
             Mis Informes
         </div>
+        <div class="sidebar-tab" data-section="comentarios">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8h10M7 12h6M7 16h4"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            Comentarios
+        </div>
         <div class="sidebar-tab" data-section="mensajes">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Mensajes
@@ -393,6 +405,12 @@ include __DIR__ . "/../templates/header.php";
     </aside>
 
     <main class="practica-main">
+        <?php if ($flashMessage): ?>
+            <div class="alert alert-<?= htmlspecialchars((string) $flashType) ?>" style="margin-bottom:16px; padding:12px 14px; border-radius:4px; background:<?= $flashType === 'error' ? '#fce8e8' : '#e9f7ee' ?>; color:<?= $flashType === 'error' ? '#8a1f1f' : '#1f5a3a' ?>; border:1px solid <?= $flashType === 'error' ? '#e5b1b1' : '#b8d9c4' ?>;">
+                <?= htmlspecialchars((string) $flashMessage) ?>
+            </div>
+        <?php endif; ?>
+
         <div class="dashboard-main-header">
             <div class="eyebrow">Panel del estudiante</div>
             <h1><?= $id_practica ? "Tu práctica en " . htmlspecialchars($estudiante["empresa"]) : "Aún no tienes una práctica asignada" ?></h1>
@@ -474,6 +492,37 @@ include __DIR__ . "/../templates/header.php";
             </div>
         </section>
 
+        <!-- ================= SECCIÓN COMENTARIOS ================= -->
+        <section id="section-comentarios" hidden>
+            <div class="panel">
+                <div class="panel-head"><h2>Comentarios del encargado</h2></div>
+                <div class="panel-body">
+                    <?php if (empty($informes)): ?>
+                        <div class="empty-state">No hay observaciones disponibles todavía. Cuando el encargado revise tus documentos aparecerán aquí.</div>
+                    <?php else: ?>
+                        <?php foreach ($informes as $inf): ?>
+                            <div class="student-card" style="margin-bottom:12px;">
+                                <div class="student-card-head">
+                                    <div>
+                                        <h3><?= htmlspecialchars($inf["nombre_archivo"] ?? "Documento") ?></h3>
+                                        <div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">
+                                            Estado: <?= htmlspecialchars((string) ($inf["estado"] ?? "pendiente")) ?>
+                                        </div>
+                                    </div>
+                                    <span class="badge <?= htmlspecialchars((string) ($inf["estado"] ?? "pendiente")) ?>">
+                                        <?= htmlspecialchars((string) ($inf["estado"] ?? "pendiente")) ?>
+                                    </span>
+                                </div>
+                                <div style="font-size:14px; line-height:1.5; color:var(--ink-soft);">
+                                    <?= !empty($inf["comentario_revisor"]) ? nl2br(htmlspecialchars($inf["comentario_revisor"])) : "Aún no hay comentarios del encargado para este documento." ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+
         <!-- ================= SECCIÓN MENSAJES ================= -->
         <section id="section-mensajes" hidden>
             <div class="panel">
@@ -511,11 +560,11 @@ include __DIR__ . "/../templates/header.php";
                         <?php endforeach; endif; ?>
                     </div>
 
-                    <form class="chat-form" id="formMensaje" action="../src/mensajes.php" method="POST">
+                    <form class="chat-form" id="formMensaje" data-current-email="<?= htmlspecialchars($correo_sesion) ?>">
                         <input type="hidden" name="action" value="enviar_mensaje">
-                        <input type="hidden" name="id_practica" value="<?= htmlspecialchars($id_practica ?? "") ?>">
+                        <input type="hidden" name="id_practica" value="<?= htmlspecialchars((string) ($id_practica ?? "")) ?>">
                         <input type="hidden" name="destinatario_rol" id="destinatarioRol" value="tutor">
-                        <textarea name="contenido" placeholder="Escribe tu mensaje..." required <?= $id_practica ? "" : "disabled" ?>></textarea>
+                        <textarea name="contenido" id="mensajeContenido" placeholder="Escribe tu mensaje..." required <?= $id_practica ? "" : "disabled" ?>></textarea>
                         <button type="submit" <?= $id_practica ? "" : "disabled" ?>>Enviar</button>
                     </form>
                 </div>
@@ -549,6 +598,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('.sidebar-tab');
     const sections = {
         informes: document.getElementById('section-informes'),
+        comentarios: document.getElementById('section-comentarios'),
         mensajes: document.getElementById('section-mensajes'),
         perfil: document.getElementById('section-perfil'),
     };
@@ -565,22 +615,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('archivoInforme');
     const filenameLabel = document.getElementById('filename');
 
-    dropzone.addEventListener('click', () => { if (!fileInput.disabled) fileInput.click(); });
-    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
-    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-    dropzone.addEventListener('drop', e => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        if (fileInput.disabled) return;
-        if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            mostrarNombreArchivo();
-        }
-    });
-    fileInput.addEventListener('change', mostrarNombreArchivo);
+    if (dropzone && fileInput) {
+        dropzone.addEventListener('click', () => { if (!fileInput.disabled) fileInput.click(); });
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (fileInput.disabled) return;
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                mostrarNombreArchivo();
+            }
+        });
+        fileInput.addEventListener('change', mostrarNombreArchivo);
+    }
 
     function mostrarNombreArchivo() {
-        if (fileInput.files.length) {
+        if (fileInput && fileInput.files.length) {
             filenameLabel.textContent = "📎 " + fileInput.files[0].name;
             filenameLabel.style.display = 'block';
         }
@@ -590,6 +642,56 @@ document.addEventListener('DOMContentLoaded', function () {
     const chatTutor = document.getElementById('chat-tutor');
     const chatEncargado = document.getElementById('chat-encargado');
     const destinatarioRol = document.getElementById('destinatarioRol');
+    const formMensaje = document.getElementById('formMensaje');
+    const mensajeContenido = document.getElementById('mensajeContenido');
+    const currentUserEmail = formMensaje ? formMensaje.dataset.currentEmail || '' : '';
+    const practicaId = formMensaje ? formMensaje.querySelector('input[name="id_practica"]').value : '';
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;');
+    }
+
+    function renderMessages(messages, container) {
+        container.innerHTML = '';
+        if (!messages.length) {
+            container.innerHTML = '<div class="empty-state">Aún no hay mensajes en esta conversación.</div>';
+            return;
+        }
+
+        messages.forEach(message => {
+            const bubble = document.createElement('div');
+            const esMio = String(message.emisor_correo || '') === currentUserEmail;
+            bubble.className = 'bubble ' + (esMio ? 'mio' : 'otro');
+            bubble.innerHTML = `${escapeHtml(message.contenido || '')}<span class="hora">${escapeHtml(message.fecha_envio ? message.fecha_envio.replace(' ', ' · ').slice(0, 16) : 'Ahora')}</span>`;
+            container.appendChild(bubble);
+        });
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function cargarMensajes(threadRole, container) {
+        if (!practicaId) {
+            container.innerHTML = '<div class="empty-state">No hay una práctica activa para chatear.</div>';
+            return;
+        }
+
+        fetch('../src/mensajes.php?id_practica=' + encodeURIComponent(practicaId) + '&destinatario_rol=' + encodeURIComponent(threadRole), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    renderMessages(data.mensajes || [], container);
+                }
+            })
+            .catch(() => {
+                container.innerHTML = '<div class="empty-state">No se pudieron cargar los mensajes en este momento.</div>';
+            });
+    }
 
     msgTabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -599,9 +701,36 @@ document.addEventListener('DOMContentLoaded', function () {
             chatTutor.hidden = !esTutor;
             chatEncargado.hidden = esTutor;
             destinatarioRol.value = esTutor ? 'tutor' : 'encargado';
+            cargarMensajes(destinatarioRol.value, esTutor ? chatTutor : chatEncargado);
         });
     });
 
+    if (formMensaje && mensajeContenido) {
+        formMensaje.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const texto = mensajeContenido.value.trim();
+            if (!texto || !practicaId) return;
+
+            const formData = new FormData(formMensaje);
+            fetch('../src/mensajes.php', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        mensajeContenido.value = '';
+                        const activeChat = document.querySelector('.chat-window:not([hidden])');
+                        if (activeChat) {
+                            cargarMensajes(destinatarioRol.value, activeChat);
+                        }
+                    }
+                });
+        });
+    }
+
+    cargarMensajes('tutor', chatTutor);
     [chatTutor, chatEncargado].forEach(c => c.scrollTop = c.scrollHeight);
 });
 </script>
