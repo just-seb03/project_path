@@ -7,7 +7,7 @@ require_once "../config/db.php";
  * y $_SESSION['correo']. No hay id_usuario en sesión, así que buscamos
  * al estudiante por correo cada vez.
  */
-if (!isset($_SESSION["correo"]) || $_SESSION["rol"] !== "Estudiantes") {
+if (!isset($_SESSION["correo"]) || $_SESSION["rol"] !== "estudiantes") {
     header("Location: ../public/login.php?error=1");
     exit();
 }
