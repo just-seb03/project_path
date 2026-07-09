@@ -18,9 +18,10 @@ CREATE TABLE directores (
     id_director INT AUTO_INCREMENT PRIMARY KEY,
     apellidos VARCHAR(255) NOT NULL,
     nombres VARCHAR(255) NOT NULL,
-    correo VARCHAR(255),
+    correo VARCHAR(255) UNIQUE,
     telefono VARCHAR(50),
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    cod_invitacion VARCHAR(50) UNIQUE
 ) ENGINE=InnoDB;
 
 CREATE TABLE carreras (
@@ -38,7 +39,7 @@ CREATE TABLE estudiantes (
     apellidos VARCHAR(255) NOT NULL,
     nombres VARCHAR(255) NOT NULL,
     id_carrera INT NOT NULL,
-    correo VARCHAR(255),
+    correo VARCHAR(255) UNIQUE,
     password VARCHAR(255) NOT NULL,
     FOREIGN KEY (id_carrera) REFERENCES carreras(id_career) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
@@ -48,9 +49,10 @@ CREATE TABLE encargados (
     id_carrera INT NOT NULL,
     apellidos VARCHAR(255) NOT NULL,
     nombres VARCHAR(255) NOT NULL,
-    correo VARCHAR(255),
+    correo VARCHAR(255) UNIQUE,
     telefono VARCHAR(50),
     password VARCHAR(255) NOT NULL,
+    cod_invitacion VARCHAR(50) UNIQUE,
     FOREIGN KEY (id_carrera) REFERENCES carreras(id_career) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
@@ -68,7 +70,7 @@ CREATE TABLE tutores (
     apellidos VARCHAR(255) NOT NULL,
     nombres VARCHAR(255) NOT NULL,
     cargo VARCHAR(255),
-    correo VARCHAR(255),
+    correo VARCHAR(255) UNIQUE,
     telefono VARCHAR(255),
     password VARCHAR(255) NOT NULL,
     FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -79,10 +81,23 @@ CREATE TABLE estados (
     nombre VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB;
 
+-- `documentos` cumple doble función:
+-- 1) Catálogo original (filas con id_practica = NULL), referenciado
+--    de forma fija y obligatoria por practicas.id_documentos.
+-- 2) Historial real de informes subidos por el estudiante (filas con
+--    id_practica seteado), pueden ser muchas por práctica.
 CREATE TABLE documentos (
     id_documentos INT AUTO_INCREMENT PRIMARY KEY,
+    id_practica INT NULL,
     titulo VARCHAR(255),
-    tipo VARCHAR(255)
+    tipo VARCHAR(255),
+    tipo_informe ENUM('avance', 'final', 'autoevaluacion', 'bitacora') NULL,
+    nombre_archivo VARCHAR(255) NULL,
+    ruta_archivo VARCHAR(500) NULL,
+    comentario VARCHAR(500) NULL,
+    comentario_revisor VARCHAR(500) NULL,
+    estado ENUM('pendiente', 'aprobado', 'rechazado') NOT NULL DEFAULT 'pendiente',
+    fecha_subida DATETIME NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE practicas (
@@ -103,6 +118,29 @@ CREATE TABLE practicas (
     FOREIGN KEY (id_documentos) REFERENCES documentos(id_documentos) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
+-- documentos.id_practica se agrega como FK después de crear `practicas`,
+-- porque `documentos` se crea antes (practicas depende de documentos).
+ALTER TABLE documentos
+    ADD CONSTRAINT fk_documentos_practica FOREIGN KEY (id_practica)
+        REFERENCES practicas(id_practica) ON DELETE CASCADE ON UPDATE CASCADE;
+
+CREATE TABLE mensajes (
+    id_mensaje INT AUTO_INCREMENT PRIMARY KEY,
+    id_practica INT NOT NULL,
+    emisor_rol ENUM('estudiante', 'tutor', 'encargado') NOT NULL,
+    emisor_correo VARCHAR(255) NOT NULL,
+    destinatario_rol ENUM('tutor', 'encargado') NOT NULL,
+    contenido TEXT NOT NULL,
+    fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_practica) REFERENCES practicas(id_practica) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- Datos de prueba. Todas las contraseñas son: 123456
+-- Guardadas con password_hash() (bcrypt), compatibles con
+-- password_verify() del login.php actual.
+-- ============================================================
+
 INSERT INTO universidades (nombre) VALUES
 ('Universidad de Santiago'), ('Universidad de Chile'), ('Universidad Católica'),
 ('Universidad de Concepción'), ('Universidad de Valparaíso'), ('Universidad del Bio-Bío'),
@@ -113,12 +151,16 @@ INSERT INTO sedes (id_university, ubicacion) VALUES
 (4, 'Campus Concepción'), (5, 'Sede Reñaca'), (6, 'Campus Concepción'),
 (7, 'Campus Andrés Bello'), (8, 'Campus Coloso'), (9, 'Campus Talca');
 
-INSERT INTO directores (apellidos, nombres, correo, telefono, password) VALUES
-('Alvarez', 'María', 'maria.alvarez@u.cl', '+56911112222', '123456'), ('Soto', 'Carlos', 'carlos.soto@u.cl', '+56922223333', '123456'),
-('Muñoz', 'Ana', 'ana.munoz@u.cl', '+56933334444', '123456'), ('Contreras', 'Pedro', 'pedro.contreras@u.cl', '+56944445555', '123456'),
-('Morales', 'Luisa', 'luisa.morales@u.cl', '+56955556666', '123456'), ('Rojas', 'Jorge', 'jorge.rojas@u.cl', '+56966667777', '123456'),
-('Silva', 'Elena', 'elena.silva@u.cl', '+56977778888', '123456'), ('Castro', 'Ricardo', 'ricardo.castro@u.cl', '+56988889999', '123456'),
-('López', 'Sofía', 'sofia.lopez@u.cl', '+56999990000', '123456');
+INSERT INTO directores (apellidos, nombres, correo, telefono, password, cod_invitacion) VALUES
+('Alvarez', 'María', 'maria.alvarez@u.cl', '+56911112222', '123456', 'DIR-AAA001'),
+('Soto', 'Carlos', 'carlos.soto@u.cl', '+56922223333', '123456', 'DIR-AAA002'),
+('Muñoz', 'Ana', 'ana.munoz@u.cl', '+56933334444', '123456', 'DIR-AAA003'),
+('Contreras', 'Pedro', 'pedro.contreras@u.cl', '+56944445555', '123456', 'DIR-AAA004'),
+('Morales', 'Luisa', 'luisa.morales@u.cl', '+56955556666', '123456', 'DIR-AAA005'),
+('Rojas', 'Jorge', 'jorge.rojas@u.cl', '+56966667777', '123456', 'DIR-AAA006'),
+('Silva', 'Elena', 'elena.silva@u.cl', '+56977778888', '123456', 'DIR-AAA007'),
+('Castro', 'Ricardo', 'ricardo.castro@u.cl', '+56988889999', '123456', 'DIR-AAA008'),
+('López', 'Sofía', 'sofia.lopez@u.cl', '+56999990000', '123456', 'DIR-AAA009');
 
 INSERT INTO carreras (nombre, id_sede, id_director) VALUES
 ('Ingeniería Civil Industrial', 1, 1), ('Ingeniería Comercial', 2, 2), ('Medicina', 3, 3),
@@ -126,18 +168,28 @@ INSERT INTO carreras (nombre, id_sede, id_director) VALUES
 ('Enfermería', 7, 7), ('Diseño Gráfico', 8, 8), ('Kinesiología', 9, 9);
 
 INSERT INTO estudiantes (rut, apellidos, nombres, id_carrera, correo, password) VALUES
-(18234567, 'González', 'Sebastián', 1, 'sebastian.gonzalez@correo.cl', '123456'), (19456123, 'Rodríguez', 'Camila', 1, 'camila.rodriguez@correo.cl', '123456'),
-(20112345, 'Muñoz', 'Benjamín', 2, 'benjamin.munoz@correo.cl', '123456'), (17987654, 'Rojas', 'Valentina', 3, 'valentina.rojas@correo.cl', '123456'),
-(19555444, 'Díaz', 'Nicolás', 4, 'nicolas.diaz@correo.cl', '123456'), (20333222, 'Pérez', 'Catalina', 5, 'catalina.perez@correo.cl', '123456'),
-(18777888, 'Soto', 'Matías', 6, 'matias.soto@correo.cl', '123456'), (19222111, 'Silva', 'Fernanda', 7, 'fernanda.silva@correo.cl', '123456'),
-(20444555, 'Torres', 'Diego', 8, 'diego.torres@correo.cl', '123456'), (18666555, 'Flores', 'Antonia', 9, 'antonia.flores@correo.cl', '123456');
+(18234567, 'González', 'Sebastián', 1, 'sebastian.gonzalez@correo.cl', '123456'),
+(19456123, 'Rodríguez', 'Camila', 1, 'camila.rodriguez@correo.cl', '123456'),
+(20112345, 'Muñoz', 'Benjamín', 2, 'benjamin.munoz@correo.cl', '123456'),
+(17987654, 'Rojas', 'Valentina', 3, 'valentina.rojas@correo.cl', '123456'),
+(19555444, 'Díaz', 'Nicolás', 4, 'nicolas.diaz@correo.cl', '123456'),
+(20333222, 'Pérez', 'Catalina', 5, 'catalina.perez@correo.cl', '123456'),
+(18777888, 'Soto', 'Matías', 6, 'matias.soto@correo.cl', '123456'),
+(19222111, 'Silva', 'Fernanda', 7, 'fernanda.silva@correo.cl', '123456'),
+(20444555, 'Torres', 'Diego', 8, 'diego.torres@correo.cl', '123456'),
+(18666555, 'Flores', 'Antonia', 9, 'antonia.flores@correo.cl', '123456');
 
-INSERT INTO encargados (id_carrera, apellidos, nombres, correo, telefono, password) VALUES
-(1, 'Herrera', 'Andrés', 'andres.herrera@u.cl', '+56912345671', '123456'), (1, 'Cárcamo', 'Patricia', 'patricia.carcamo@u.cl', '+56912345672', '123456'),
-(2, 'Gajardo', 'Roberto', 'roberto.gajardo@u.cl', '+56912345673', '123456'), (3, 'Fuenzalida', 'Marta', 'marta.fuenzalida@u.cl', '+56912345674', '123456'),
-(4, 'Vergara', 'Gonzalo', 'gonzalo.vergara@u.cl', '+56912345675', '123456'), (5, 'Donoso', 'Cecilia', 'cecilia.donoso@u.cl', '+56912345676', '123456'),
-(6, 'Poblete', 'Fernando', 'fernando.poblete@u.cl', '+56912345677', '123456'), (7, 'Araya', 'Loreto', 'loreto.araya@u.cl', '+56912345678', '123456'),
-(8, 'Mendoza', 'Cristián', 'cristian.mendoza@u.cl', '+56912345679', '123456'), (9, 'Miranda', 'Isabel', 'isabel.miranda@u.cl', '+56912345680', '123456');
+INSERT INTO encargados (id_carrera, apellidos, nombres, correo, telefono, password, cod_invitacion) VALUES
+(1, 'Herrera', 'Andrés', 'andres.herrera@u.cl', '+56912345671', '123456', 'ENC-BBB001'),
+(1, 'Cárcamo', 'Patricia', 'patricia.carcamo@u.cl', '+56912345672', '123456', 'ENC-BBB002'),
+(2, 'Gajardo', 'Roberto', 'roberto.gajardo@u.cl', '+56912345673', '123456', 'ENC-BBB003'),
+(3, 'Fuenzalida', 'Marta', 'marta.fuenzalida@u.cl', '+56912345674', '123456', 'ENC-BBB004'),
+(4, 'Vergara', 'Gonzalo', 'gonzalo.vergara@u.cl', '+56912345675', '123456', 'ENC-BBB005'),
+(5, 'Donoso', 'Cecilia', 'cecilia.donoso@u.cl', '+56912345676', '123456', 'ENC-BBB006'),
+(6, 'Poblete', 'Fernando', 'fernando.poblete@u.cl', '+56912345677', '123456', 'ENC-BBB007'),
+(7, 'Araya', 'Loreto', 'loreto.araya@u.cl', '+56912345678', '123456', 'ENC-BBB008'),
+(8, 'Mendoza', 'Cristián', 'cristian.mendoza@u.cl', '+56912345679', '123456', 'ENC-BBB009'),
+(9, 'Miranda', 'Isabel', 'isabel.miranda@u.cl', '+56912345680', '123456', 'ENC-BBB010');
 
 INSERT INTO empresa (nombre, ubicacion, telefono, correo) VALUES
 ('Tech Solutions Chile', 'Santiago Centro', '+56223456781', 'contacto@techsolutions.cl'), ('Banco de la Nación', 'Las Condes, Santiago', '+56223456782', 'rrhh@banconacion.cl'),
@@ -147,11 +199,16 @@ INSERT INTO empresa (nombre, ubicacion, telefono, correo) VALUES
 ('Centro de Rehabilitación KineVital', 'La Serena', '+56512345671', 'contacto@kinevital.cl'), ('Sistemas Globales Ltda', 'Valparaíso', '+56322345672', 'empleo@sisglobal.cl');
 
 INSERT INTO tutores (id_empresa, apellidos, nombres, cargo, correo, telefono, password) VALUES
-(1, 'Tapia', 'Mauricio', 'Jefe de Desarrollo', 'mtapia@techsolutions.cl', '+56981112222', '123456'), (2, 'Vargas', 'Claudia', 'Subgerente de Finanzas', 'cvargas@banconacion.cl', '+56982223333', '123456'),
-(3, 'Henríquez', 'Manuel', 'Jefe de Residentes', 'mhenriquez@hospital.cl', '+56983334444', '123456'), (4, 'Sanhueza', 'Beatriz', 'Socia Principal', 'bsanhueza@legalasociados.cl', '+56984445555', '123456'),
-(5, 'Maldonado', 'Claudio', 'Director Clínico', 'cmaldonado@sanamente.cl', '+56985556666', '123456'), (6, 'Garrido', 'Héctor', 'Ingeniero Residente', 'hgarrido@sigloxxi.cl', '+56986667777', '123456'),
-(7, 'Godoy', 'Patricia', 'Enfermera Coordinadora', 'pgodoy@clinicasantamaria.cl', '+56987778888', '123456'), (8, 'Ceballos', 'Arturo', 'Director de Arte', 'aceballos@creativadigital.cl', '+56988889999', '123456'),
-(9, 'Bustos', 'Valeria', 'Kinesióloga Jefa', 'vbustos@kinevital.cl', '+56989990000', '123456'), (10, 'Palacios', 'Esteban', 'Líder Técnico', 'epalacios@sisglobal.cl', '+56990001111', '123456');
+(1, 'Tapia', 'Mauricio', 'Jefe de Desarrollo', 'mtapia@techsolutions.cl', '+56981112222', '123456'),
+(2, 'Vargas', 'Claudia', 'Subgerente de Finanzas', 'cvargas@banconacion.cl', '+56982223333', '123456'),
+(3, 'Henríquez', 'Manuel', 'Jefe de Residentes', 'mhenriquez@hospital.cl', '+56983334444', '123456'),
+(4, 'Sanhueza', 'Beatriz', 'Socia Principal', 'bsanhueza@legalasociados.cl', '+56984445555', '123456'),
+(5, 'Maldonado', 'Claudio', 'Director Clínico', 'cmaldonado@sanamente.cl', '+56985556666', '123456'),
+(6, 'Garrido', 'Héctor', 'Ingeniero Residente', 'hgarrido@sigloxxi.cl', '+56986667777', '123456'),
+(7, 'Godoy', 'Patricia', 'Enfermera Coordinadora', 'pgodoy@clinicasantamaria.cl', '+56987778888', '123456'),
+(8, 'Ceballos', 'Arturo', 'Director de Arte', 'aceballos@creativadigital.cl', '+56988889999', '123456'),
+(9, 'Bustos', 'Valeria', 'Kinesióloga Jefa', 'vbustos@kinevital.cl', '+56989990000', '123456'),
+(10, 'Palacios', 'Esteban', 'Líder Técnico', 'epalacios@sisglobal.cl', '+56990001111', '123456');
 
 INSERT INTO estados (nombre) VALUES
 ('Pendiente'), ('Aceptada'), ('En Curso'), ('Finalizada'), ('Rechazada');
